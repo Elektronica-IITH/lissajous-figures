@@ -1,4 +1,5 @@
 matplotlib
+st-social-media-links
 numpy
 sympy
 scipy

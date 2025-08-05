@@ -2,6 +2,18 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
+from st_social_media_links import SocialMediaIcons
+#Cosmetic
+st.logo("elektronica_notext.png",size="large")
+#Add links here
+social_media_links = [
+  "https://www.linkedin.com/company/elektronica-iit-hyderabad/",
+  "https://github.com/Elektronica-IITH",
+  "https://www.instagram.com/elektronica_iith/",
+]
+social_media_icons = SocialMediaIcons(social_media_links)
+
+
 plt.rcParams.update({
     "axes.facecolor": "none",         # Transparent axes background
     "figure.facecolor": "none",       # Transparent figure background
@@ -14,6 +26,7 @@ plt.rcParams.update({
     "axes.titlecolor": "white",       # Title color
 })
 plotcolor='dodgerblue'
+st.header("Elektronica IITH")
 st.set_page_config(page_title="Lissajous Generator", layout="wide")
 st.title("Lissajous Figure Generator")
 
@@ -97,3 +110,6 @@ with plot_col3:
     ax3.axis("equal")
     ax3.grid(True)
     st.pyplot(fig3)
+
+
+social_media_icons.render()
