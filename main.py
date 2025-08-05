@@ -3,35 +3,37 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
 from st_social_media_links import SocialMediaIcons
-#Cosmetic
-st.logo("elektronica_notext.png",size="large")
-#Add links here
+
+st.set_page_config(page_title="Lissajous Generator", layout="wide")
+st.logo("elektronica.png",size="large")
+# Social Media Links
 social_media_links = [
-  "https://www.linkedin.com/company/elektronica-iit-hyderabad/",
-  "https://github.com/Elektronica-IITH",
-  "https://www.instagram.com/elektronica_iith/",
+    "https://www.linkedin.com/company/elektronica-iit-hyderabad/",
+    "https://github.com/Elektronica-IITH",
+    "https://www.instagram.com/elektronica_iith/",
 ]
 social_media_icons = SocialMediaIcons(social_media_links)
 
-
 plt.rcParams.update({
-    "axes.facecolor": "none",         # Transparent axes background
-    "figure.facecolor": "none",       # Transparent figure background
-    "axes.edgecolor": "white",        # White border
-    "axes.labelcolor": "white",       # White x/y labels
-    "xtick.color": "white",           # White x-axis tick labels
-    "ytick.color": "white",           # White y-axis tick labels
-    "grid.color": "none",            # White grid lines
-    "text.color": "white",            # All other text (like titles)
-    "axes.titlecolor": "white",       # Title color
+    "axes.facecolor": "none",
+    "figure.facecolor": "none",
+    "axes.edgecolor": "white",
+    "axes.labelcolor": "white",
+    "xtick.color": "white",
+    "ytick.color": "white",
+    "grid.color": "none",
+    "text.color": "white",
+    "axes.titlecolor": "white",
 })
-plotcolor='dodgerblue'
-st.header("Elektronica IITH")
-st.set_page_config(page_title="Lissajous Generator", layout="wide")
-st.title("Lissajous Figure Generator")
+
+plotcolor = 'dodgerblue'
+
+st.title("Elektronica IITH")
+
+st.header("Lissajous Figure Generator")
 
 # ---------- Waveform Generator ----------
-def waveform_function(name, t, freq, amp, phase):
+def waveform_function(name, t, freq, amp, phase, expr=None):
     omega_t = 2 * np.pi * freq * t + phase
     if name == "Sine":
         return amp * np.sin(omega_t)
@@ -43,29 +45,41 @@ def waveform_function(name, t, freq, amp, phase):
         return amp * signal.sawtooth(omega_t, width=0.5)
     elif name == "Sawtooth":
         return amp * signal.sawtooth(omega_t)
+    elif name == "Arbitrary" and expr is not None:
+        try:
+            return eval(expr)
+        except Exception as e:
+            st.error(f"Invalid expression: {e}")
+            return np.zeros_like(t)
     else:
         return np.zeros_like(t)
 
 # ---------- GLOBAL SETTINGS ----------
 t_max_default = 4 * np.pi
-num_points_default = 400
+num_points_default = 1000
 
 # ---------- CONTROLS ----------
 ctrl_col1, ctrl_col2, ctrl_col3 = st.columns(3)
 
 with ctrl_col1:
     st.subheader("🔵 x(t) Settings")
-    x_wave = st.selectbox("Waveform", ["Sine", "Cosine", "Square", "Triangle", "Sawtooth"], key="x_wave")
-    x_freq = st.slider("Frequency", 1, 20, 3, key="x_freq")
-    x_amp = st.slider("Amplitude", 0.1, 5.0, 1.0, key="x_amp")
-    x_phase = st.slider("Phase (radians)", 0.0, 2 * np.pi, 0.0, key="x_phase")
+    x_wave = st.selectbox("Waveform", ["Sine", "Cosine", "Square", "Triangle", "Sawtooth", "Arbitrary"], key="x_wave")
+    if x_wave == "Arbitrary":
+        x_expr = st.text_input("Enter expression using 't' (e.g., np.sin(3*t))", key="x_expr")
+    else:
+        x_freq = st.slider("Frequency", 1, 20, 3, key="x_freq")
+        x_amp = st.slider("Amplitude", 0.1, 5.0, 1.0, key="x_amp")
+        x_phase = st.slider("Phase (radians)", 0.0, 2 * np.pi, 0.0, key="x_phase")
 
 with ctrl_col2:
     st.subheader("🟢 y(t) Settings")
-    y_wave = st.selectbox("Waveform", ["Sine", "Cosine", "Square", "Triangle", "Sawtooth"], key="y_wave")
-    y_freq = st.slider("Frequency", 1, 20, 4, key="y_freq")
-    y_amp = st.slider("Amplitude", 0.1, 5.0, 1.0, key="y_amp")
-    y_phase = st.slider("Phase (radians)", 0.0, 2 * np.pi, np.pi / 2, key="y_phase")
+    y_wave = st.selectbox("Waveform", ["Sine", "Cosine", "Square", "Triangle", "Sawtooth", "Arbitrary"], key="y_wave")
+    if y_wave == "Arbitrary":
+        y_expr = st.text_input("Enter expression using 't' (e.g., np.sin(4*t + np.pi/2))", key="y_expr")
+    else:
+        y_freq = st.slider("Frequency", 1, 20, 4, key="y_freq")
+        y_amp = st.slider("Amplitude", 0.1, 5.0, 1.0, key="y_amp")
+        y_phase = st.slider("Phase (radians)", 0.0, 2 * np.pi, np.pi / 2, key="y_phase")
 
 with ctrl_col3:
     st.subheader("⚙️ Global Settings")
@@ -74,15 +88,23 @@ with ctrl_col3:
 
 # ---------- COMPUTE SIGNALS ----------
 t = np.linspace(0, t_max, num_points)
-x = waveform_function(x_wave, t, x_freq, x_amp, x_phase)
-y = waveform_function(y_wave, t, y_freq, y_amp, y_phase)
+
+if x_wave == "Arbitrary":
+    x = waveform_function("Arbitrary", t, 0, 0, 0, expr=x_expr)
+else:
+    x = waveform_function(x_wave, t, x_freq, x_amp, x_phase)
+
+if y_wave == "Arbitrary":
+    y = waveform_function("Arbitrary", t, 0, 0, 0, expr=y_expr)
+else:
+    y = waveform_function(y_wave, t, y_freq, y_amp, y_phase)
 
 # ---------- PLOTS ----------
 plot_col1, plot_col2, plot_col3 = st.columns(3)
 
 with plot_col1:
     fig1, ax1 = plt.subplots()
-    fig1.patch.set_alpha(0.0)        # Figure background
+    fig1.patch.set_alpha(0.0)
     ax1.plot(t, x, color=plotcolor)
     ax1.set_title("x(t) vs t")
     ax1.set_xlabel("t")
@@ -92,7 +114,7 @@ with plot_col1:
 
 with plot_col2:
     fig2, ax2 = plt.subplots()
-    fig2.patch.set_alpha(0.0)        # Figure background
+    fig2.patch.set_alpha(0.0)
     ax2.plot(t, y, color=plotcolor)
     ax2.set_title("y(t) vs t")
     ax2.set_xlabel("t")
@@ -102,7 +124,7 @@ with plot_col2:
 
 with plot_col3:
     fig3, ax3 = plt.subplots()
-    fig3.patch.set_alpha(0.0)        # Figure background
+    fig3.patch.set_alpha(0.0)
     ax3.plot(x, y, color=plotcolor)
     ax3.set_title("Lissajous Figure: y(t) vs x(t)")
     ax3.set_xlabel("x(t)")
@@ -110,6 +132,5 @@ with plot_col3:
     ax3.axis("equal")
     ax3.grid(True)
     st.pyplot(fig3)
-
 
 social_media_icons.render()
