@@ -3,10 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
 from st_social_media_links import SocialMediaIcons
+import random
 
+# ---------- PAGE CONFIG ----------
 st.set_page_config(page_title="Lissajous Generator", layout="wide")
-st.logo("elektronica.png",size="large")
-# Social Media Links
+st.logo("elektronica.png", size="large")
+
+# ---------- SOCIAL LINKS ----------
 social_media_links = [
     "https://www.linkedin.com/company/elektronica-iit-hyderabad/",
     "https://github.com/Elektronica-IITH",
@@ -14,6 +17,7 @@ social_media_links = [
 ]
 social_media_icons = SocialMediaIcons(social_media_links)
 
+# ---------- MATPLOTLIB SETTINGS ----------
 plt.rcParams.update({
     "axes.facecolor": "none",
     "figure.facecolor": "none",
@@ -28,11 +32,30 @@ plt.rcParams.update({
 
 plotcolor = 'dodgerblue'
 
-st.title("Elektronica IITH")
+# ---------- TITLE & HEADER ----------
+title_col, tip_col = st.columns([3, 1])
 
-st.header("Lissajous Figure Generator")
+with title_col:
+    st.title("Elektronica IITH")
+    st.header("Lissajous Figure Generator")
 
-# ---------- Waveform Generator ----------
+with tip_col:
+    if "tip_index" not in st.session_state:
+        st.session_state.tip_index = 0
+
+    tips = [
+        "Lissajous figures are created by plotting two signals: x(t) vs y(t).",
+        "Changing the frequency ratio changes the pattern complexity!",
+        "Phase shifts create loops or rotations in the pattern.",
+        "Try 'Square' or 'Sawtooth' waves for edgy, unique figures!",
+    ]
+
+    if st.button("🔁 Show Tip"):
+        st.session_state.tip_index = (st.session_state.tip_index + 1) % len(tips)
+
+    st.info(tips[st.session_state.tip_index])
+
+# ---------- WAVEFORM FUNCTION ----------
 def waveform_function(name, t, freq, amp, phase, expr=None):
     omega_t = 2 * np.pi * freq * t + phase
     if name == "Sine":
@@ -63,23 +86,23 @@ ctrl_col1, ctrl_col2, ctrl_col3 = st.columns(3)
 
 with ctrl_col1:
     st.subheader("🔵 x(t) Settings")
-    x_wave = st.selectbox("Waveform", ["Sine", "Cosine", "Square", "Triangle", "Sawtooth", "Arbitrary"], key="x_wave")
+    x_wave = st.selectbox("Waveform", ["Sine", "Cosine", "Square", "Triangle", "Sawtooth", "Arbitrary"], index=0, key="x_wave")
     if x_wave == "Arbitrary":
         x_expr = st.text_input("Enter expression using 't' (e.g., np.sin(3*t))", key="x_expr")
     else:
-        x_freq = st.slider("Frequency", 1, 20, 3, key="x_freq")
+        x_freq = st.slider("Frequency", 1, 20, 1, key="x_freq")
         x_amp = st.slider("Amplitude", 0.1, 5.0, 1.0, key="x_amp")
         x_phase = st.slider("Phase (radians)", 0.0, 2 * np.pi, 0.0, key="x_phase")
 
 with ctrl_col2:
     st.subheader("🟢 y(t) Settings")
-    y_wave = st.selectbox("Waveform", ["Sine", "Cosine", "Square", "Triangle", "Sawtooth", "Arbitrary"], key="y_wave")
+    y_wave = st.selectbox("Waveform", ["Sine", "Cosine", "Square", "Triangle", "Sawtooth", "Arbitrary"], index=1, key="y_wave")
     if y_wave == "Arbitrary":
         y_expr = st.text_input("Enter expression using 't' (e.g., np.sin(4*t + np.pi/2))", key="y_expr")
     else:
-        y_freq = st.slider("Frequency", 1, 20, 4, key="y_freq")
+        y_freq = st.slider("Frequency", 1, 20, 1, key="y_freq")
         y_amp = st.slider("Amplitude", 0.1, 5.0, 1.0, key="y_amp")
-        y_phase = st.slider("Phase (radians)", 0.0, 2 * np.pi, np.pi / 2, key="y_phase")
+        y_phase = st.slider("Phase (radians)", 0.0, 2 * np.pi, 0.0, key="y_phase")
 
 with ctrl_col3:
     st.subheader("⚙️ Global Settings")
@@ -133,4 +156,35 @@ with plot_col3:
     ax3.grid(True)
     st.pyplot(fig3)
 
+# ---------- QUIZ FEATURE ----------
+st.markdown("---")
+st.subheader("🧠 Mini Challenge: Recreate This Figure!")
+
+quiz_img_path = "quiz_target.png"  # Place this image in same folder
+st.image(quiz_img_path, caption="Try to match this Lissajous figure!", use_container_width=True)
+
+with st.expander("Hint"):
+    st.write("Try x: Sine, y: Sine. Change frequencies and phase!")
+
+correct_x = {"wave": "Sine", "freq": 3, "phase": 0.0}
+correct_y = {"wave": "Sine", "freq": 4, "phase": np.pi / 2}
+
+if st.button("✅ Submit My Attempt"):
+    match_x = (
+        x_wave == correct_x["wave"]
+        and x_freq == correct_x["freq"]
+        and np.isclose(x_phase, correct_x["phase"], atol=0.1)
+    )
+    match_y = (
+        y_wave == correct_y["wave"]
+        and y_freq == correct_y["freq"]
+        and np.isclose(y_phase, correct_y["phase"], atol=0.1)
+    )
+    if match_x and match_y:
+        st.success("🎉 Correct! You recreated the figure successfully!")
+    else:
+        st.error("❌ Not quite. Keep tweaking the values and try again!")
+
+# ---------- SOCIAL MEDIA ----------
 social_media_icons.render()
+

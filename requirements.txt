@@ -1,3 +1,4 @@
+streamlit
 matplotlib
 st-social-media-links
 numpy
