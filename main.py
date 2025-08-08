@@ -57,7 +57,7 @@ with tip_col:
 
 # ---------- WAVEFORM FUNCTION ----------
 def waveform_function(name, t, freq, amp, phase, expr=None):
-    omega_t = 2 * np.pi * freq * t + phase
+    omega_t = 2 * np.pi * freq * t + phase/180*np.pi
     if name == "Sine":
         return amp * np.sin(omega_t)
     elif name == "Cosine":
@@ -92,7 +92,7 @@ with ctrl_col1:
     else:
         x_freq = st.slider("Frequency", 1, 20, 1, key="x_freq")
         x_amp = st.slider("Amplitude", 0.1, 5.0, 1.0, key="x_amp")
-        x_phase = st.slider("Phase (radians)", 0.0, 2 * np.pi, 0.0, key="x_phase")
+        x_phase = st.slider("Phase (in theta)", 0, 360, 0, key="x_phase")
 
 with ctrl_col2:
     st.subheader("🟢 y(t) Settings")
@@ -102,7 +102,7 @@ with ctrl_col2:
     else:
         y_freq = st.slider("Frequency", 1, 20, 1, key="y_freq")
         y_amp = st.slider("Amplitude", 0.1, 5.0, 1.0, key="y_amp")
-        y_phase = st.slider("Phase (radians)", 0.0, 2 * np.pi, 0.0, key="y_phase")
+        y_phase = st.slider("Phase (in theta)", 0, 360, 0, key="y_phase")
 
 with ctrl_col3:
     st.subheader("⚙️ Global Settings")
