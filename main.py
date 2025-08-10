@@ -48,6 +48,7 @@ with tip_col:
         "Changing the frequency ratio changes the pattern complexity!",
         "Phase shifts create loops or rotations in the pattern.",
         "Try 'Square' or 'Sawtooth' waves for edgy, unique figures!",
+        "See those ripples in x(t) and y(t) when you reduce number of points? Check out [Aliasing](https://en.wikipedia.org/wiki/Aliasing)"
     ]
 
     if st.button("🔁 Show Tip"):
@@ -107,8 +108,9 @@ with ctrl_col2:
 with ctrl_col3:
     st.subheader("⚙️ Global Settings")
     t_max = st.slider("Time Range", float(1/2 * np.pi), float(20 * np.pi), float(t_max_default))
-    num_points = st.slider("Number of Points", 100, 5000, num_points_default)
-
+    num_points_density = st.slider("Number of Points per second", 100, 5000, num_points_default)
+    show_quiz = st.checkbox("Show Quiz Overlay", value=False)
+num_points=int(num_points_density*t_max)
 # ---------- COMPUTE SIGNALS ----------
 t = np.linspace(0, t_max, num_points)
 
@@ -145,46 +147,47 @@ with plot_col2:
     ax2.grid(True)
     st.pyplot(fig2)
 
+
 with plot_col3:
+    # ---------- QUIZ BACKGROUND ----------
+    if show_quiz:
+        if "quiz_params" not in st.session_state:
+            quiz_waveforms = ["Sine", "Cosine","Triangle"]
+            st.session_state.quiz_params = {
+                "qx_wave": random.choice(quiz_waveforms),
+                "qy_wave": random.choice(quiz_waveforms),
+                "qx_freq": random.randint(1, 10),
+                "qy_freq": random.randint(1, 10),
+                "qx_amp": random.uniform(0.5, 2.0),
+                "qy_amp": random.uniform(0.5, 2.0),
+                "qx_phase": random.randint(0, 360),
+                "qy_phase": random.randint(0, 360)
+            }
+        p = st.session_state.quiz_params
+        t_quiz = np.linspace(0, t_max, num_points)
+        qx = waveform_function(p["qx_wave"], t_quiz, p["qx_freq"], p["qx_amp"], p["qx_phase"])
+        qy = waveform_function(p["qy_wave"], t_quiz, p["qy_freq"], p["qy_amp"], p["qy_phase"])
+    else:
+        st.session_state.pop("quiz_params", None)
+        qx, qy = None, None
+
+    # ---------- COMBINED PLOT ----------
     fig3, ax3 = plt.subplots()
     fig3.patch.set_alpha(0.0)
-    ax3.plot(x, y, color=plotcolor)
-    ax3.set_title("Lissajous Figure: y(t) vs x(t)")
+
+    if show_quiz:
+        ax3.plot(qx, qy, color='orange', alpha=0.4, label="Quiz Figure")  # background
+
+    ax3.plot(x, y, color=plotcolor, label="Your Figure")  # foreground
+
+    ax3.set_title("Lissajous Figure (Your Figure over Quiz)")
     ax3.set_xlabel("x(t)")
     ax3.set_ylabel("y(t)")
     ax3.axis("equal")
     ax3.grid(True)
+    if show_quiz:
+        ax3.legend()
     st.pyplot(fig3)
-
-# ---------- QUIZ FEATURE ----------
-st.markdown("---")
-st.subheader("🧠 Mini Challenge: Recreate This Figure!")
-
-quiz_img_path = "quiz_target.png"  # Place this image in same folder
-st.image(quiz_img_path, caption="Try to match this Lissajous figure!", use_container_width=True)
-
-with st.expander("Hint"):
-    st.write("Try x: Sine, y: Sine. Change frequencies and phase!")
-
-correct_x = {"wave": "Sine", "freq": 3, "phase": 0.0}
-correct_y = {"wave": "Sine", "freq": 4, "phase": np.pi / 2}
-
-if st.button("✅ Submit My Attempt"):
-    match_x = (
-        x_wave == correct_x["wave"]
-        and x_freq == correct_x["freq"]
-        and np.isclose(x_phase, correct_x["phase"], atol=0.1)
-    )
-    match_y = (
-        y_wave == correct_y["wave"]
-        and y_freq == correct_y["freq"]
-        and np.isclose(y_phase, correct_y["phase"], atol=0.1)
-    )
-    if match_x and match_y:
-        st.success("🎉 Correct! You recreated the figure successfully!")
-    else:
-        st.error("❌ Not quite. Keep tweaking the values and try again!")
-
 # ---------- SOCIAL MEDIA ----------
 social_media_icons.render()
 
