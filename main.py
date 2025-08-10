@@ -109,7 +109,7 @@ with ctrl_col3:
     st.subheader("⚙️ Global Settings")
     t_max = st.slider("Time Range", float(1/2 * np.pi), float(20 * np.pi), float(t_max_default))
     num_points_density = st.slider("Number of Points per second", 100, 5000, num_points_default)
-    show_quiz = st.checkbox("Show Quiz Overlay", value=True)
+    show_Challenge = st.checkbox("Show Challenge Overlay", value=True)
 num_points=int(num_points_density*t_max)
 # ---------- COMPUTE SIGNALS ----------
 t = np.linspace(0, t_max, num_points)
@@ -146,26 +146,26 @@ with plot_col2:
     ax2.set_ylabel("y(t)")
     ax2.grid(True)
     st.pyplot(fig2)
-# Quiz question
-quiz_x_wave="Triangle" 
-quiz_y_wave="Triangle"
+# Challenge question
+Challenge_x_wave="Triangle" 
+Challenge_y_wave="Triangle"
 tq=t
-quiz_x_freq=3
-quiz_y_freq=2
-quiz_x_amp=1
-quiz_y_amp=1.5
-quiz_x_phase=10
-quiz_y_phase=0
+Challenge_x_freq=3
+Challenge_y_freq=2
+Challenge_x_amp=1
+Challenge_y_amp=1.5
+Challenge_x_phase=10
+Challenge_y_phase=0
 with plot_col3:
     fig3, ax3 = plt.subplots()
     fig3.patch.set_alpha(0.0)
 
-    # If quiz overlay enabled
-    if show_quiz:
+    # If Challenge overlay enabled
+    if show_Challenge:
         tq = np.linspace(0, t_max, num_points)
-        qx = waveform_function(quiz_x_wave, tq, quiz_x_freq, quiz_x_amp, quiz_x_phase)
-        qy = waveform_function(quiz_y_wave, tq, quiz_y_freq, quiz_y_amp, quiz_y_phase)
-        ax3.plot(qx, qy, color="gray", alpha=0.3, label="Quiz Figure")
+        qx = waveform_function(Challenge_x_wave, tq, Challenge_x_freq, Challenge_x_amp, Challenge_x_phase)
+        qy = waveform_function(Challenge_y_wave, tq, Challenge_y_freq, Challenge_y_amp, Challenge_y_phase)
+        ax3.plot(qx, qy, color="lime", alpha=0.3, label="Challenge Figure")
 
     # User-tunable figure
     ax3.plot(x, y, color=plotcolor, label="Your Figure")
@@ -176,6 +176,19 @@ with plot_col3:
     ax3.axis("equal")
     ax3.grid(True)
     ax3.legend()
-    st.pyplot(fig3)# ---------- SOCIAL MEDIA ----------
+    st.pyplot(fig3)
+
+    import io
+    buf = io.BytesIO()
+    fig3.savefig(buf, format="png", dpi=300, bbox_inches='tight', transparent=True)
+    buf.seek(0)
+    st.download_button(
+        label="📥 Download Lissajous PNG",
+        data=buf,
+        file_name="lissajous_figure.png",
+        mime="image/png"
+    )
+
+# ---------- SOCIAL MEDIA ----------
 social_media_icons.render()
 
