@@ -109,7 +109,7 @@ with ctrl_col3:
     st.subheader("⚙️ Global Settings")
     t_max = st.slider("Time Range", float(1/2 * np.pi), float(20 * np.pi), float(t_max_default))
     num_points_density = st.slider("Number of Points per second", 100, 5000, num_points_default)
-    show_quiz = st.checkbox("Show Quiz Overlay", value=False)
+    show_quiz = st.checkbox("Show Quiz Overlay", value=True)
 num_points=int(num_points_density*t_max)
 # ---------- COMPUTE SIGNALS ----------
 t = np.linspace(0, t_max, num_points)
@@ -146,48 +146,36 @@ with plot_col2:
     ax2.set_ylabel("y(t)")
     ax2.grid(True)
     st.pyplot(fig2)
-
-
+# Quiz question
+quiz_x_wave="Triangle" 
+quiz_y_wave="Triangle"
+tq=t
+quiz_x_freq=3
+quiz_y_freq=2
+quiz_x_amp=1
+quiz_y_amp=1.5
+quiz_x_phase=10
+quiz_y_phase=0
 with plot_col3:
-    # ---------- QUIZ BACKGROUND ----------
-    if show_quiz:
-        if "quiz_params" not in st.session_state:
-            quiz_waveforms = ["Sine", "Cosine","Triangle"]
-            st.session_state.quiz_params = {
-                "qx_wave": random.choice(quiz_waveforms),
-                "qy_wave": random.choice(quiz_waveforms),
-                "qx_freq": random.randint(1, 10),
-                "qy_freq": random.randint(1, 10),
-                "qx_amp": random.uniform(0.5, 2.0),
-                "qy_amp": random.uniform(0.5, 2.0),
-                "qx_phase": random.randint(0, 360),
-                "qy_phase": random.randint(0, 360)
-            }
-        p = st.session_state.quiz_params
-        t_quiz = np.linspace(0, t_max, num_points)
-        qx = waveform_function(p["qx_wave"], t_quiz, p["qx_freq"], p["qx_amp"], p["qx_phase"])
-        qy = waveform_function(p["qy_wave"], t_quiz, p["qy_freq"], p["qy_amp"], p["qy_phase"])
-    else:
-        st.session_state.pop("quiz_params", None)
-        qx, qy = None, None
-
-    # ---------- COMBINED PLOT ----------
     fig3, ax3 = plt.subplots()
     fig3.patch.set_alpha(0.0)
 
+    # If quiz overlay enabled
     if show_quiz:
-        ax3.plot(qx, qy, color='orange', alpha=0.4, label="Quiz Figure")  # background
+        tq = np.linspace(0, t_max, num_points)
+        qx = waveform_function(quiz_x_wave, tq, quiz_x_freq, quiz_x_amp, quiz_x_phase)
+        qy = waveform_function(quiz_y_wave, tq, quiz_y_freq, quiz_y_amp, quiz_y_phase)
+        ax3.plot(qx, qy, color="gray", alpha=0.3, label="Quiz Figure")
 
-    ax3.plot(x, y, color=plotcolor, label="Your Figure")  # foreground
-
-    ax3.set_title("Lissajous Figure (Your Figure over Quiz)")
+    # User-tunable figure
+    ax3.plot(x, y, color=plotcolor, label="Your Figure")
+    
+    ax3.set_title("Lissajous Figure: y(t) vs x(t)")
     ax3.set_xlabel("x(t)")
     ax3.set_ylabel("y(t)")
     ax3.axis("equal")
     ax3.grid(True)
-    if show_quiz:
-        ax3.legend()
-    st.pyplot(fig3)
-# ---------- SOCIAL MEDIA ----------
+    ax3.legend()
+    st.pyplot(fig3)# ---------- SOCIAL MEDIA ----------
 social_media_icons.render()
 
