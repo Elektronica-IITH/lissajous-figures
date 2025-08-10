@@ -178,17 +178,7 @@ with plot_col3:
     ax3.legend()
     st.pyplot(fig3)
 
-    import io
-    buf = io.BytesIO()
-    fig3.savefig(buf, format="png", dpi=300, bbox_inches='tight', transparent=True)
-    buf.seek(0)
-    st.download_button(
-        label="📥 Download Lissajous PNG",
-        data=buf,
-        file_name="lissajous_figure.png",
-        mime="image/png"
-    )
-
+    
 # ---------- SOCIAL MEDIA ----------
 social_media_icons.render()
 
